@@ -37,6 +37,7 @@ extern "C" {
 #include "stm32f1xx_ll_pwr.h"
 #include "stm32f1xx_ll_dma.h"
 #include "stm32f1xx_ll_spi.h"
+#include "stm32f1xx_ll_tim.h"
 #include "stm32f1xx_ll_usart.h"
 #include "stm32f1xx_ll_gpio.h"
 
@@ -74,6 +75,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_Pin LL_GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
+#define EC11_B_Pin LL_GPIO_PIN_0
+#define EC11_B_GPIO_Port GPIOA
+#define EC11_A_Pin LL_GPIO_PIN_1
+#define EC11_A_GPIO_Port GPIOA
 #define GPS_TX_Pin LL_GPIO_PIN_2
 #define GPS_TX_GPIO_Port GPIOA
 #define GPS_RX_Pin LL_GPIO_PIN_3

@@ -6,10 +6,10 @@
 #define JITTER_TIME 10  // 消抖时间，ms
 
 __STATIC_INLINE void LED_On(void) {
-  LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+  LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 }
 __STATIC_INLINE void LED_Off(void) {
-  LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+  LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 }
 __STATIC_INLINE void LED_Toggle(void) {
   LL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
