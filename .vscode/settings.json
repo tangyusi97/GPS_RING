@@ -1,0 +1,37 @@
+{
+  "C_Cpp.autoAddFileAssociations": false,
+  "C_Cpp.autocompleteAddParentheses": true,
+  "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
+  "C_Cpp.debugShortcut": false,
+  "C_Cpp.default.cppStandard": "",
+  "C_Cpp.default.defines": [
+    "USE_FULL_LL_DRIVER",
+    "HSE_VALUE=8000000",
+    "HSE_STARTUP_TIMEOUT=100",
+    "LSE_STARTUP_TIMEOUT=5000",
+    "LSE_VALUE=32768",
+    "HSI_VALUE=8000000",
+    "LSI_VALUE=40000",
+    "VDD_VALUE=3300",
+    "PREFETCH_ENABLE=1",
+    "STM32F103x6",
+    "__GNUC__"
+  ],
+  "C_Cpp.default.cStandard": "c99",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/**"
+  ],
+  "C_Cpp.default.systemIncludePath": [
+    "C:\\Program Files (x86)\\GNU Arm Embedded Toolchain\\10 2021.10\\arm-none-eabi\\include",
+    "C:\\Keil_v5\\ARM\\ARMCC\\include"
+  ],
+  "C_Cpp.default.intelliSenseMode": "gcc-arm",
+  "C_Cpp.codeAnalysis.exclude": {
+    "Drivers/**": true,
+  },
+  "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+    "clang-diagnostic-pointer-sign",
+    "clang-diagnostic-implicit-function-declaration",
+    "clang-diagnostic-fortify-source",
+  ]
+}
