@@ -27,15 +27,15 @@ Alarm alarms[] = {
     0, 24, 0,  0x7F,  // Alarm20
 };
 
-uint8_t contrast = 3;  // 屏幕亮度设置
-
+uint8_t contrast = 3;   // 屏幕亮度设置
 uint8_t duration = 15;  // 打铃时长
+uint8_t saved = 1;      // 是否已保存设置
 
 PAGE current_page = PAGE_WAIT;
 MODE current_mode = MODE_LIST;
 uint8_t *current_value = 0;
 
-MENU menu_setting = {0, 0, 3};
+MENU menu_setting = {0, 0, 4};
 MENU menu_alarm_list = {0, 0, sizeof(alarms) / 4};
 MENU menu_alarm_setting = {0, 0, 3};
 MENU menu_week = {0, 0, 7};
@@ -68,6 +68,7 @@ void Load_Data(void) {
 }
 
 void Save_Data(void) {
+  if (saved) return;
   LL_FLASH_Unlock();
   LL_FLASH_PageErase(SAVE_DATA_ADDR, 1);
   uint16_t data;
@@ -80,4 +81,5 @@ void Save_Data(void) {
   data = contrast + (duration << 8);
   LL_FLASH_Program(SAVE_DATA_ADDR + Model_GetAlarmsLen() * 4, data);
   LL_FLASH_Lock(FLASH);
+  saved = 1;
 }

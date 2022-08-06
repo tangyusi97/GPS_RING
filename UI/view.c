@@ -34,6 +34,12 @@ static void Render_Item_Duration_Value(uint8_t selected) {
   ssd1306_WriteChar('s', MENU_FONT, color);
 }
 
+static void Render_Item_Save_Name(void) { ssd1306_WriteString("Save", MENU_FONT, White); }
+
+static void Render_Item_Save_Value(uint8_t selected) {
+  if (saved) ssd1306_WriteString("OK", MENU_FONT, White);
+}
+
 static void Render_Item_Alarm_Enable_Name(void) { ssd1306_WriteString("Enable", MENU_FONT, White); }
 
 static void Render_Item_Alarm_Enable_Value(uint8_t selected) {
@@ -106,12 +112,12 @@ static void Render_Items_General(ITEM* items, uint8_t items_len, MENU* offset) {
 
 /*********************************** Render Pages ***********************************/
 
-static void Render_Page_Wait(void) {
+static inline void Render_Page_Wait(void) {
   ssd1306_SetCursor(0, 0);
   ssd1306_WriteString("Getting start...", Font_7x10, White);
 }
 
-static void Render_Page_Home(void) {
+static inline void Render_Page_Home(void) {
   // 年月日
   ssd1306_SetCursor(8, 0);
   ssd1306_WriteNumber(G_local_time.year, 4, 0, Font_7x10, White);
@@ -136,17 +142,18 @@ static void Render_Page_Home(void) {
   ssd1306_WriteString("SET              BEEP", Font_6x8, White);
 }
 
-static void Render_Page_Setting(void) {
+static inline void Render_Page_Setting(void) {
   Check_List_Offset(&menu_setting);
-  ITEM items[3] = {
-      &Render_Item_Alarms_Name,   0,                            //
-      &Render_Item_Contrast_Name, &Render_Item_Contrast_Value,  //
-      &Render_Item_Duration_Name, &Render_Item_Duration_Value   //
+  ITEM items[4] = {
+      Render_Item_Alarms_Name,   0,                           //
+      Render_Item_Contrast_Name, Render_Item_Contrast_Value,  //
+      Render_Item_Duration_Name, Render_Item_Duration_Value,  //
+      Render_Item_Save_Name,     Render_Item_Save_Value,      //
   };
-  Render_Items_General(items, 3, &menu_setting);
+  Render_Items_General(items, 4, &menu_setting);
 }
 
-static void Render_Page_Alarm_List(void) {
+static inline void Render_Page_Alarm_List(void) {
   Check_List_Offset(&menu_alarm_list);
   ssd1306_SetCursor(0, (menu_alarm_list.select - menu_alarm_list.start) * MENU_LINE_HEIGHT);
   ssd1306_WriteChar('>', MENU_FONT, White);
@@ -174,17 +181,17 @@ static void Render_Page_Alarm_List(void) {
   }
 }
 
-static void Render_Page_Alarm_Setting(void) {
+static inline void Render_Page_Alarm_Setting(void) {
   Check_List_Offset(&menu_alarm_setting);
   ITEM items[3] = {
-      &Render_Item_Alarm_Enable_Name, &Render_Item_Alarm_Enable_Value,  //
-      &Render_Item_Alarm_Time_Name,   &Render_Item_Alarm_Time_Value,    //
-      &Render_Item_Alarm_Repeat_Name, &Render_Item_Alarm_Repeat_Value   //
+      Render_Item_Alarm_Enable_Name, Render_Item_Alarm_Enable_Value,  //
+      Render_Item_Alarm_Time_Name,   Render_Item_Alarm_Time_Value,    //
+      Render_Item_Alarm_Repeat_Name, Render_Item_Alarm_Repeat_Value   //
   };
   Render_Items_General(items, 3, &menu_alarm_setting);
 }
 
-static void Render_Page_Week(void) {
+static inline void Render_Page_Week(void) {
   Check_List_Offset(&menu_week);
   ssd1306_SetCursor(0, (menu_week.select - menu_week.start) * MENU_LINE_HEIGHT);
   ssd1306_WriteChar('>', MENU_FONT, White);
@@ -203,12 +210,12 @@ static void Render_Page_Week(void) {
   }
 }
 
-static void Render_Page_Beep(void) {
+static inline void Render_Page_Beep(void) {
   Check_List_Offset(&menu_beep);
   ITEM items[3] = {
-      &Render_Item_Beep_Mode1_Name, &Render_Item_Beep_Mode1_Value,  //
-      &Render_Item_Beep_Mode2_Name, &Render_Item_Beep_Mode2_Value,  //
-      &Render_Item_Beep_Mode3_Name, &Render_Item_Beep_Mode3_Value,  //
+      Render_Item_Beep_Mode1_Name, Render_Item_Beep_Mode1_Value,  //
+      Render_Item_Beep_Mode2_Name, Render_Item_Beep_Mode2_Value,  //
+      Render_Item_Beep_Mode3_Name, Render_Item_Beep_Mode3_Value,  //
   };
   Render_Items_General(items, 3, &menu_beep);
 }

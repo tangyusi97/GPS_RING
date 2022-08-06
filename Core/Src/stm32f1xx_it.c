@@ -93,9 +93,9 @@ void TIM2_IRQHandler(void) {
   /* USER CODE BEGIN TIM2_IRQn 0 */
   LL_TIM_ClearFlag_UPDATE(TIM2);
   if (LL_TIM_GetDirection(TIM2)) {
-    BTN_Press(UP);
+    Handle_Operation(UP);
   } else {
-    BTN_Press(DOWN);
+    Handle_Operation(DOWN);
   }
 
   /* USER CODE END TIM2_IRQn 0 */
@@ -128,25 +128,25 @@ void EXTI15_10_IRQHandler(void) {
   if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_12) != RESET) {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_12);
     /* USER CODE BEGIN LL_EXTI_LINE_12 */
-    BTN_Press(UP);
+    Handle_Operation(UP);
     /* USER CODE END LL_EXTI_LINE_12 */
   }
   if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_13) != RESET) {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_13);
     /* USER CODE BEGIN LL_EXTI_LINE_13 */
-    BTN_Press(DOWN);
+    Handle_Operation(DOWN);
     /* USER CODE END LL_EXTI_LINE_13 */
   }
   if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_14) != RESET) {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_14);
     /* USER CODE BEGIN LL_EXTI_LINE_14 */
-    BTN_Press(LEFT);
+    Handle_Operation(LEFT);
     /* USER CODE END LL_EXTI_LINE_14 */
   }
   if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_15) != RESET) {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_15);
     /* USER CODE BEGIN LL_EXTI_LINE_15 */
-    BTN_Press(RIGHT);
+    Handle_Operation(RIGHT);
     /* USER CODE END LL_EXTI_LINE_15 */
   }
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */

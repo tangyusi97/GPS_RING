@@ -29,8 +29,7 @@ typedef enum {
   UP, DOWN, LEFT, RIGHT
 } CONTROL_TYPE;
 
-void BTN_Press(CONTROL_TYPE type);
-void KNOB_DetectDirection(void);
+void Handle_Operation(CONTROL_TYPE type);
 void Refresh_Time(void);
 void Control_Init(void);
 

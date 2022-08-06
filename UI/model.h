@@ -38,6 +38,7 @@ typedef enum {
 extern Alarm alarms[20];        // 闹铃数据
 extern uint8_t contrast;        // 屏幕亮度
 extern uint8_t duration;        // 响铃时长
+extern uint8_t saved;           // 是否已保存设置
 extern PAGE current_page;       // 当前页面
 extern MODE current_mode;       // 当前渲染模式
 extern uint8_t *current_value;  // 正在修改的数据
