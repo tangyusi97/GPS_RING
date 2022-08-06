@@ -9,7 +9,7 @@ typedef struct {
   uint8_t enable;
   uint8_t hour;
   uint8_t minute;
-  uint8_t repeat;
+  uint8_t repeat;     // bit[0:7]为星期重复，bit[8]为只响一次标记
 } Alarm;
 
 typedef struct {

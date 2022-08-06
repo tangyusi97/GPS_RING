@@ -3,23 +3,16 @@
 #include "model.h"
 #include "timer.h"
 
+uint32_t operation_ticks = 0;
+
 void Control_Init(void) {
   Load_Data();
   Update_View();
 }
 
-/* GPS给出授时数据后调用，每秒调用1次 */
-void Refresh_Time(void) {
-  if (current_page == PAGE_WAIT || current_page == PAGE_HOME) {
-    if (G_local_time.year > 2050 || G_local_time.year < 2020)
-      current_page = PAGE_WAIT;
-    else
-      current_page = PAGE_HOME;
-    Update_View();
-  }
-}
-
-/*********************************** Hardware Control ***********************************/
+/******************************************************************************/
+/*                               Hardware Control                             */
+/******************************************************************************/
 
 static void BEEP_On_Mode1(void) {}
 static void BEEP_On_Mode2(void) {}
@@ -31,9 +24,38 @@ static void (*beep_fn[3])(void) = {
     &BEEP_On_Mode3,
 };
 
-/****************************************************************************************/
+static void Excute_Alarms(void) {
+  uint8_t flag = 0;
+  for (uint8_t i = 0; i < Model_GetAlarmsLen(); i++) {
+    // 时间进入响铃范围
+    if (current_page == PAGE_HOME &&                // 防止在设置时响铃
+        alarms[i].enable &&                         //
+        alarms[i].hour == G_local_time.hour &&      //
+        alarms[i].minute == G_local_time.minute &&  //
+        duration > G_local_time.second) {
+      // 如果没有设置重复，则清除只响一次标记
+      if ((alarms[i].repeat & 0x7F) == 0) {
+        flag = 1;
+        alarms[i].repeat &= ~(1 << 7);
+      }
+      // 设置了重复
+      else if (alarms[i].repeat & (1 << G_local_time.week))
+        flag = 1;
+    }
+    // 关闭只响一次的闹钟
+    else if (alarms[i].repeat == 0) {
+      alarms[i].enable = 0;
+    }
+  }
+  if (flag)
+    BEEP_On();
+  else
+    BEEP_Off();
+}
 
-/********************************* Data Control Funtions ********************************/
+/******************************************************************************/
+/*                            Data Control Funtions                           */
+/******************************************************************************/
 
 static inline void Change_Page(PAGE page) {
   current_page = page;
@@ -55,9 +77,16 @@ static void Change_Value(uint8_t *value, CONTROL_TYPE type, uint8_t min, uint8_t
   saved = 0;
 }
 
-static inline void Toggle_Value(uint8_t *value) {
-  *value = !(*value);
-  saved = 0;
+static inline void Enable_Alarm(void) {
+  alarms[menu_alarm_list.select].enable = 1;
+  alarms[menu_alarm_list.select].repeat |= 1 << 7;
+}
+
+static inline void Toggle_Alarm_Enable(void) {
+  if (alarms[menu_alarm_list.select].enable)
+    alarms[menu_alarm_list.select].enable = 0;
+  else
+    Enable_Alarm();
 }
 
 static void Toggle_Week(void) {
@@ -69,13 +98,11 @@ static void Toggle_Week(void) {
     *repeat |= 1 << select;
 }
 
-static inline void Alarm_Enable(uint8_t index) { alarms[index].enable = 1; }
-
 static inline void Reset_Menu(MENU *menu) { menu->start = menu->select = 0; }
 
-/************************************************************************************/
-
-/*********************************** Page Control ***********************************/
+/******************************************************************************/
+/*                              Operation Handler                             */
+/******************************************************************************/
 
 static inline void Handle_Operation_HOME(CONTROL_TYPE type) {
   switch (type) {
@@ -174,11 +201,11 @@ static inline void Handle_Operation_ALARM_SETTING(CONTROL_TYPE type) {
           break;
         case MODE_HOUR:
           Change_Value(&alarms[menu_alarm_list.select].hour, type, 0, 23);
-          Alarm_Enable(menu_alarm_list.select);
+          Enable_Alarm();
           break;
         case MODE_MINUTE:
           Change_Value(&alarms[menu_alarm_list.select].minute, type, 0, 59);
-          Alarm_Enable(menu_alarm_list.select);
+          Enable_Alarm();
           break;
         default:
           break;
@@ -202,7 +229,7 @@ static inline void Handle_Operation_ALARM_SETTING(CONTROL_TYPE type) {
     case RIGHT:
       switch (menu_alarm_setting.select) {
         case 0:  // 设置闹铃开关
-          Toggle_Value(&alarms[menu_alarm_list.select].enable);
+          Toggle_Alarm_Enable();
           break;
         case 1:  // 设置时间
           if (current_mode == MODE_LIST)
@@ -265,7 +292,7 @@ void Handle_Operation(CONTROL_TYPE type) {
   // 消抖
   static uint32_t interval = 0;
   if (G_ms_ticks - interval < JITTER_TIME) return;
-  interval = G_ms_ticks;
+  interval = operation_ticks = G_ms_ticks;
   // 响应
   switch (current_page) {
     case PAGE_WAIT:
@@ -294,4 +321,40 @@ void Handle_Operation(CONTROL_TYPE type) {
   Update_View();
 }
 
-/************************************************************************************/
+/******************************************************************************/
+/*                                 UI Control                                 */
+/******************************************************************************/
+
+void Refresh_Time(void) {
+  if (current_page == PAGE_WAIT || current_page == PAGE_HOME) {
+    if (G_local_time.year > 2050 || G_local_time.year < 2020)
+      current_page = PAGE_WAIT;
+    else
+      current_page = PAGE_HOME;
+    Update_View();
+  }
+}
+
+void Auto_Back_to_Home(void) {
+  if (G_ms_ticks - operation_ticks > 15000) {
+    current_page = PAGE_HOME;
+    Update_View();
+    Reset_Menu(&menu_setting);
+    Reset_Menu(&menu_alarm_list);
+    Reset_Menu(&menu_alarm_setting);
+    Reset_Menu(&menu_week);
+    Reset_Menu(&menu_beep);
+  }
+}
+
+/******************************************************************************/
+/*                                 Loop Task                                  */
+/******************************************************************************/
+
+void Loop_Task_1s(void) {
+  Refresh_Time();
+  Auto_Back_to_Home();
+  Excute_Alarms();
+}
+
+void Loop_Task_1ms(void) {}

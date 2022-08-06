@@ -72,6 +72,7 @@
 void SysTick_Handler(void) {
   /* USER CODE BEGIN SysTick_IRQn 0 */
   G_ms_ticks++;
+  Loop_Task_1ms();
   /* USER CODE END SysTick_IRQn 0 */
 
   /* USER CODE BEGIN SysTick_IRQn 1 */

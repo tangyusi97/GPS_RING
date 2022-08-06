@@ -32,5 +32,7 @@ typedef enum {
 void Handle_Operation(CONTROL_TYPE type);
 void Refresh_Time(void);
 void Control_Init(void);
+void Loop_Task_1s(void);
+void Loop_Task_1ms(void);
 
 #endif  /* __CONTROL_H__ */

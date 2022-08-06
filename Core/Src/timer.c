@@ -2,13 +2,18 @@
 
 #include <string.h>
 
-#include "usart.h"
 #include "control.h"
+#include "usart.h"
 
 uint32_t G_ms_ticks;
 TIME G_local_time;
 
+uint8_t GPS_ready = 0;
+
 void TIMER_Init(void) {
+  while (GPS_ready == 0) {
+    LL_mDelay(1);
+  }
   uint8_t turn_off_msg[] = "$CCRMO,,3,*4F\r\n";
   uint8_t turn_on_RMC_msg[] = "$CCRMO,RMC,2,1*23\r\n";
   USART_Send(USART2, turn_off_msg, sizeof(turn_off_msg));
@@ -25,7 +30,8 @@ void TIMER_Init(void) {
 static uint8_t Comma_Pos(uint8_t *buffer, uint8_t n) {
   uint8_t *p = buffer;
   while (n) {
-    if (*buffer == '*' || *buffer < ' ' || *buffer > 'z') return 0XFF;  //遇到'*'或者非法字符,则不存在第n个逗号
+    if (*buffer == '*' || *buffer < ' ' || *buffer > 'z')
+      return 0XFF;  //遇到'*'或者非法字符,则不存在第n个逗号
     if (*buffer == ',') n--;
     buffer++;
   }
@@ -211,12 +217,13 @@ static void GPRMC_Analysis(uint8_t *buffer, TIME *local_time) {
 }
 
 void TIMER_Get_Msg(uint8_t byte) {
+  GPS_ready = 1;
   static uint8_t msg[100];
   static uint8_t size = 0;
   if (byte == 0x0A && msg[size - 1] == 0x0D) {
     // 接收完成
     GPRMC_Analysis(msg, &G_local_time);
-    Refresh_Time();
+    Loop_Task_1s();
     size = 0;
   }
   size++;
