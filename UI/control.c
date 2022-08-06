@@ -26,25 +26,26 @@ static void (*beep_fn[3])(void) = {
 
 static void Excute_Alarms(void) {
   uint8_t flag = 0;
-  for (uint8_t i = 0; i < Model_GetAlarmsLen(); i++) {
-    // 时间进入响铃范围
-    if (current_page == PAGE_HOME &&                // 防止在设置时响铃
-        alarms[i].enable &&                         //
-        alarms[i].hour == G_local_time.hour &&      //
-        alarms[i].minute == G_local_time.minute &&  //
-        duration > G_local_time.second) {
-      // 如果没有设置重复，则清除只响一次标记
-      if ((alarms[i].repeat & 0x7F) == 0) {
-        flag = 1;
-        alarms[i].repeat &= ~(1 << 7);
+  if (current_page == PAGE_HOME) {
+    for (uint8_t i = 0; i < Model_GetAlarmsLen(); i++) {
+      // 时间进入响铃范围
+      if (alarms[i].enable &&                         //
+          alarms[i].hour == G_local_time.hour &&      //
+          alarms[i].minute == G_local_time.minute &&  //
+          duration > G_local_time.second) {
+        // 如果没有设置重复，则清除只响一次标记
+        if ((alarms[i].repeat & 0x7F) == 0) {
+          flag = 1;
+          alarms[i].repeat &= ~(1 << 7);
+        }
+        // 设置了重复正常响铃
+        else if (alarms[i].repeat & (1 << G_local_time.week))
+          flag = 1;
       }
-      // 设置了重复
-      else if (alarms[i].repeat & (1 << G_local_time.week))
-        flag = 1;
-    }
-    // 关闭只响一次的闹钟
-    else if (alarms[i].repeat == 0) {
-      alarms[i].enable = 0;
+      // 关闭只响一次的闹钟
+      else if (alarms[i].repeat == 0) {
+        alarms[i].enable = 0;
+      }
     }
   }
   if (flag)
@@ -82,11 +83,12 @@ static inline void Enable_Alarm(void) {
   alarms[menu_alarm_list.select].repeat |= 1 << 7;
 }
 
-static inline void Toggle_Alarm_Enable(void) {
+static void Toggle_Alarm_Enable(void) {
   if (alarms[menu_alarm_list.select].enable)
     alarms[menu_alarm_list.select].enable = 0;
   else
     Enable_Alarm();
+  saved = 0;
 }
 
 static void Toggle_Week(void) {
@@ -96,6 +98,7 @@ static void Toggle_Week(void) {
     *repeat &= ~(1 << select);
   else
     *repeat |= 1 << select;
+  saved = 0;
 }
 
 static inline void Reset_Menu(MENU *menu) { menu->start = menu->select = 0; }

@@ -72,7 +72,7 @@ __STATIC_INLINE void LL_FLASH_SetKey(FLASH_TypeDef *FLASHx, uint32_t key) { WRIT
 __STATIC_INLINE uint16_t LL_FLASH_Read(uint32_t address) { return *(__IO uint16_t *)address; }
 
 LL_StatusTypeDef LL_FLASH_Unlock(void);
-LL_StatusTypeDef LL_FLASH_PageErase(uint32_t page_addr, uint16_t NbPages);
+LL_StatusTypeDef LL_FLASH_PageErase(uint32_t page_addr, uint16_t size);
 LL_StatusTypeDef LL_FLASH_Program(uint32_t flash_addr, uint16_t data);
 
 #endif

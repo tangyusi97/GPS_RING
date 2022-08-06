@@ -58,7 +58,7 @@ void Load_Data(void) {
     data = LL_FLASH_Read(SAVE_DATA_ADDR + i);
     alarms[i / 4].enable = (uint8_t)data;
     alarms[i / 4].hour = (uint8_t)(data >> 8);
-    data = LL_FLASH_Read(SAVE_DATA_ADDR + i * 2 + 2);
+    data = LL_FLASH_Read(SAVE_DATA_ADDR + i + 2);
     alarms[i / 4].minute = (uint8_t)data;
     alarms[i / 4].repeat = (uint8_t)(data >> 8);
   }
