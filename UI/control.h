@@ -35,4 +35,7 @@ void Control_Init(void);
 void Loop_Task_1s(void);
 void Loop_Task_1ms(void);
 
+extern void (*delay_task)(void);
+extern uint8_t delay_task_interupt;
+
 #endif  /* __CONTROL_H__ */

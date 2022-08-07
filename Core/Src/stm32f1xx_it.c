@@ -18,9 +18,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_it.h"
-
 #include "main.h"
+#include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "control.h"
@@ -67,9 +66,10 @@
 /*           Cortex-M3 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
- * @brief This function handles System tick timer.
- */
-void SysTick_Handler(void) {
+  * @brief This function handles System tick timer.
+  */
+void SysTick_Handler(void)
+{
   /* USER CODE BEGIN SysTick_IRQn 0 */
   G_ms_ticks++;
   Loop_Task_1ms();
@@ -88,17 +88,37 @@ void SysTick_Handler(void) {
 /******************************************************************************/
 
 /**
- * @brief This function handles TIM2 global interrupt.
- */
-void TIM2_IRQHandler(void) {
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-  LL_TIM_ClearFlag_UPDATE(TIM2);
-  if (LL_TIM_GetDirection(TIM2)) {
-    Handle_Operation(UP);
-  } else {
-    Handle_Operation(DOWN);
+  * @brief This function handles TIM1 update interrupt.
+  */
+void TIM1_UP_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_UP_IRQn 0 */
+if (LL_TIM_IsActiveFlag_UPDATE(TIM1) == 1) {
+    LL_TIM_ClearFlag_UPDATE(TIM1);
+    LL_TIM_DisableCounter(TIM1);
+    if (delay_task_interupt) delay_task_interupt = 0;
+    else delay_task();
   }
+  /* USER CODE END TIM1_UP_IRQn 0 */
+  /* USER CODE BEGIN TIM1_UP_IRQn 1 */
 
+  /* USER CODE END TIM1_UP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
+void TIM2_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM2_IRQn 0 */
+  if (LL_TIM_IsActiveFlag_UPDATE(TIM2) == 1) {
+    LL_TIM_ClearFlag_UPDATE(TIM2);
+    if (LL_TIM_GetDirection(TIM2)) {
+      Handle_Operation(UP);
+    } else {
+      Handle_Operation(DOWN);
+    }
+  }
   /* USER CODE END TIM2_IRQn 0 */
   /* USER CODE BEGIN TIM2_IRQn 1 */
 
@@ -106,9 +126,10 @@ void TIM2_IRQHandler(void) {
 }
 
 /**
- * @brief This function handles USART2 global interrupt.
- */
-void USART2_IRQHandler(void) {
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
   /* USER CODE BEGIN USART2_IRQn 0 */
   if (LL_USART_IsActiveFlag_RXNE(USART2)) {
     TIMER_Get_Msg(LL_USART_ReceiveData8(USART2));
@@ -120,31 +141,36 @@ void USART2_IRQHandler(void) {
 }
 
 /**
- * @brief This function handles EXTI line[15:10] interrupts.
- */
-void EXTI15_10_IRQHandler(void) {
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
 
   /* USER CODE END EXTI15_10_IRQn 0 */
-  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_12) != RESET) {
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_12) != RESET)
+  {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_12);
     /* USER CODE BEGIN LL_EXTI_LINE_12 */
     Handle_Operation(UP);
     /* USER CODE END LL_EXTI_LINE_12 */
   }
-  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_13) != RESET) {
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_13) != RESET)
+  {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_13);
     /* USER CODE BEGIN LL_EXTI_LINE_13 */
     Handle_Operation(DOWN);
     /* USER CODE END LL_EXTI_LINE_13 */
   }
-  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_14) != RESET) {
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_14) != RESET)
+  {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_14);
     /* USER CODE BEGIN LL_EXTI_LINE_14 */
     Handle_Operation(LEFT);
     /* USER CODE END LL_EXTI_LINE_14 */
   }
-  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_15) != RESET) {
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_15) != RESET)
+  {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_15);
     /* USER CODE BEGIN LL_EXTI_LINE_15 */
     Handle_Operation(RIGHT);

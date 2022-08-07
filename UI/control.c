@@ -3,7 +3,8 @@
 #include "model.h"
 #include "timer.h"
 
-uint32_t operation_ticks = 0;
+static uint32_t last_operation_ticks = 0;  // 记录上一次操作的时间，用于超时返回
+static uint8_t beep_mode = 0;              // 响铃模式，0:自动，1:手动
 
 void Control_Init(void) {
   Load_Data();
@@ -11,20 +12,61 @@ void Control_Init(void) {
 }
 
 /******************************************************************************/
-/*                               Hardware Control                             */
+/*                                  TIM Control                               */
 /******************************************************************************/
 
-static void BEEP_On_Mode1(void) {}
-static void BEEP_On_Mode2(void) {}
-static void BEEP_On_Mode3(void) {}
+void (*delay_task)(void) = 0;     // 延时任务指针
+uint8_t delay_task_interupt = 0;  // 是否打断延时任务计时
 
-static void (*beep_fn[3])(void) = {
-    &BEEP_On_Mode1,
-    &BEEP_On_Mode2,
-    &BEEP_On_Mode3,
-};
+void Start_Delay_Task(uint16_t ms, void (*callback)(void)) {
+  if (LL_TIM_IsEnabledCounter(TIM1)) {
+    delay_task_interupt = 1;
+    LL_TIM_GenerateEvent_UPDATE(TIM1);
+  }
+  delay_task = callback;
+  LL_TIM_SetAutoReload(TIM1, ms - 1);
+  LL_TIM_EnableCounter(TIM1);
+}
+
+/******************************************************************************/
+/*                                  BEEP Control                              */
+/******************************************************************************/
+
+static uint16_t *current_sequence;
+static uint16_t sequence1[] = {10000, 0};
+static uint16_t sequence2[] = {1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 0};
+static uint16_t sequence3[] = {1500, 500, 1500, 500, 1500, 500, 1500, 0};
+static uint16_t *sequences[] = { sequence1, sequence2, sequence3};
+
+static uint8_t beep_step = 0;
+
+static void __BEEP_On_Manual(void) {
+  BEEP_Toggle();
+  if (current_sequence[beep_step] == 0) {
+    BEEP_Off();
+    beep_mode = 0;
+    beep_step = 0;
+    return;
+  }
+  Start_Delay_Task(current_sequence[beep_step], __BEEP_On_Manual);
+  beep_step++;
+}
+
+static void BEEP_On_Manual(uint8_t mode) {
+  BEEP_Off();
+  beep_mode = 1;
+  beep_step = 0;
+  current_sequence = sequences[mode];
+  __BEEP_On_Manual();
+}
+
+
+/******************************************************************************/
+/*                                  Alarm Control                             */
+/******************************************************************************/
 
 static void Excute_Alarms(void) {
+  if (beep_mode == 1) return;
   uint8_t flag = 0;
   if (current_page == PAGE_HOME) {
     for (uint8_t i = 0; i < Model_GetAlarmsLen(); i++) {
@@ -284,7 +326,7 @@ static inline void Handle_Operation_BEEP(CONTROL_TYPE type) {
       Change_Page(PAGE_HOME);
       break;
     case RIGHT:
-      beep_fn[menu_beep.select]();
+      BEEP_On_Manual(menu_beep.select);
       break;
     default:
       break;
@@ -295,7 +337,7 @@ void Handle_Operation(CONTROL_TYPE type) {
   // 消抖
   static uint32_t interval = 0;
   if (G_ms_ticks - interval < JITTER_TIME) return;
-  interval = operation_ticks = G_ms_ticks;
+  interval = last_operation_ticks = G_ms_ticks;
   // 响应
   switch (current_page) {
     case PAGE_WAIT:
@@ -339,7 +381,8 @@ void Refresh_Time(void) {
 }
 
 void Auto_Back_to_Home(void) {
-  if (G_ms_ticks - operation_ticks > 15000) {
+  if (current_page == PAGE_WAIT || current_page == PAGE_HOME) return;
+  if (G_ms_ticks - last_operation_ticks > 15000) {
     current_page = PAGE_HOME;
     Update_View();
     Reset_Menu(&menu_setting);

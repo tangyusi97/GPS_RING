@@ -174,9 +174,13 @@ static inline void Render_Page_Alarm_List(void) {
       ssd1306_WriteString(alarms[i + menu_alarm_list.start].enable ? "On" : "Off", MENU_FONT, White);
       // render value
       ssd1306_SetCursor(MENU_VALUE_TAB, MENU_LINE_HEIGHT * i);
-      for (uint8_t j = 0; j < 7; j++) {
-        if (alarms[i + menu_alarm_list.start].repeat & (1 << j)) {
-          ssd1306_WriteNumber(j + 1, 1, 0, MENU_FONT, White);
+      if ((alarms[i + menu_alarm_list.start].repeat & 0x7F) == 0) {
+        ssd1306_WriteString("Once", MENU_FONT, White);
+      } else {
+        for (uint8_t j = 0; j < 7; j++) {
+          if (alarms[i + menu_alarm_list.start].repeat & (1 << j)) {
+            ssd1306_WriteNumber(j + 1, 1, 0, MENU_FONT, White);
+          }
         }
       }
     }
